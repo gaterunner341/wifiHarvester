@@ -35,13 +35,13 @@ def wifiHarvester():
 
     print("Checking saved Wi-Fi profiles...")
     # Iterate through profiles
-    netshCommand = subprocess.check_output(['netsh', 'wlan', 'show', 'profiles']).decode('utf-8').split('\n')
+    netshCommand = subprocess.check_output(['netsh', 'wlan', 'show', 'profiles']).decode('utf-8', errors='ignore').split('\n')
     wifiProfiles = [i.split(":")[1][1:-1] for i in netshCommand if "All User Profile" in i]
 
     print("Extracting saved passwords...")
     for i in wifiProfiles:
         #Iterate through profile list and show security keys
-        results = subprocess.check_output(['netsh', 'wlan', 'show', 'profile', i, 'key=clear']).decode('utf-8').split('\n')
+        results = subprocess.check_output(['netsh', 'wlan', 'show', 'profile', i, 'key=clear']).decode('utf-8', errors='ignore').split('\n')
         #Find profiles with security key present
         keyResults = [b.split(":")[1][1:-1] for b in results if "Key Content" in b]
         #Trying to determine if MAC Randomization is enabled
