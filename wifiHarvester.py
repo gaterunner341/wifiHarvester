@@ -12,6 +12,7 @@ from prettytable import PrettyTable
 import socket
 import uuid
 import sys
+import ctypes
 
 
 def wifiHarvester():
@@ -28,6 +29,9 @@ def wifiHarvester():
     report.align['Connection Mode'] = 'l'
     report.sortby = 'Network'
 
+    # Detect Windows OEM console code page for correct decoding of netsh output
+    oem_encoding = 'cp' + str(ctypes.windll.kernel32.GetOEMCP())
+
     #Gets the host name of the system
     hostName = socket.gethostname()
     print("Host Name: " + hostName)
@@ -35,13 +39,13 @@ def wifiHarvester():
 
     print("Checking saved Wi-Fi profiles...")
     # Iterate through profiles
-    netshCommand = subprocess.check_output(['netsh', 'wlan', 'show', 'profiles']).decode('utf-8', errors='ignore').split('\n')
+    netshCommand = subprocess.check_output(['netsh', 'wlan', 'show', 'profiles']).decode(oem_encoding, errors='ignore').split('\n')
     wifiProfiles = [i.split(":")[1][1:-1] for i in netshCommand if "All User Profile" in i]
 
     print("Extracting saved passwords...")
     for i in wifiProfiles:
         #Iterate through profile list and show security keys
-        results = subprocess.check_output(['netsh', 'wlan', 'show', 'profile', i, 'key=clear']).decode('utf-8', errors='ignore').split('\n')
+        results = subprocess.check_output(['netsh', 'wlan', 'show', 'profile', i, 'key=clear']).decode(oem_encoding, errors='ignore').split('\n')
         #Find profiles with security key present
         keyResults = [b.split(":")[1][1:-1] for b in results if "Key Content" in b]
         #Trying to determine if MAC Randomization is enabled
